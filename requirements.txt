@@ -1,0 +1,9 @@
+google-genai
+numpy
+pandas
+pillow
+pydantic
+pypdf
+pytest
+reportlab
+streamlit

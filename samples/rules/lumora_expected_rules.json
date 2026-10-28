@@ -1,0 +1,315 @@
+[
+  {
+    "id": "aspect_ratio",
+    "title": "Approved aspect ratio",
+    "category": "technical",
+    "description": "Video must be 16:9, 9:16 or 1:1.",
+    "source_quote": "Accepted aspect ratios: 16:9 (1920\u00d71080) for web and TV, 9:16 (1080\u00d71920)",
+    "severity": "critical",
+    "check_type": "technical",
+    "check_key": "aspect_ratio",
+    "params": {
+      "allowed": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ]
+    }
+  },
+  {
+    "id": "resolution",
+    "title": "Minimum resolution",
+    "category": "technical",
+    "description": "The short side must be at least 1080 px; 720p or lower is rejected.",
+    "source_quote": "Minimum resolution is 1080 px on the short side.",
+    "severity": "critical",
+    "check_type": "technical",
+    "check_key": "min_resolution",
+    "params": {
+      "min_short_side": 1080
+    }
+  },
+  {
+    "id": "frame_rate",
+    "title": "Approved frame rate",
+    "category": "technical",
+    "description": "Frame rate must be 25 or 30 fps.",
+    "source_quote": "Frame rate must be 25 or 30 fps.",
+    "severity": "major",
+    "check_type": "technical",
+    "check_key": "frame_rate",
+    "params": {
+      "allowed": [
+        25,
+        30
+      ]
+    }
+  },
+  {
+    "id": "duration",
+    "title": "Approved duration",
+    "category": "structure",
+    "description": "Length must be 6, 15 or 30 seconds, within 0.5 s.",
+    "source_quote": "Approved lengths are 6, 15 and 30 seconds, with a tolerance of \u00b10.5 seconds.",
+    "severity": "major",
+    "check_type": "technical",
+    "check_key": "duration",
+    "params": {
+      "allowed_seconds": [
+        6,
+        15,
+        30
+      ],
+      "tolerance": 0.5
+    }
+  },
+  {
+    "id": "loudness",
+    "title": "Integrated loudness",
+    "category": "audio",
+    "description": "Integrated loudness must be -16 LUFS \u00b11.5 LU.",
+    "source_quote": "Integrated loudness: \u221216 LUFS \u00b11.5 LU for web and social.",
+    "severity": "major",
+    "check_type": "technical",
+    "check_key": "loudness",
+    "params": {
+      "target_lufs": -16,
+      "tolerance": 1.5
+    }
+  },
+  {
+    "id": "clipping",
+    "title": "True peak limit",
+    "category": "audio",
+    "description": "True peak must not exceed -1 dBTP; no clipping.",
+    "source_quote": "True peak must not exceed \u22121 dBTP. No clipping or distortion.",
+    "severity": "major",
+    "check_type": "technical",
+    "check_key": "true_peak",
+    "params": {
+      "max_dbtp": -1
+    }
+  },
+  {
+    "id": "flashing",
+    "title": "No rapid flashing",
+    "category": "accessibility",
+    "description": "No content may flash more than 3 times per second.",
+    "source_quote": "No flashing content more than 3 times per second.",
+    "severity": "critical",
+    "check_type": "technical",
+    "check_key": "flashing",
+    "params": {
+      "max_per_second": 3
+    }
+  },
+  {
+    "id": "brand_reveal",
+    "title": "Brand visible early",
+    "category": "structure",
+    "description": "The logo or brand name must be visible within the first 2 seconds.",
+    "source_quote": "The Lumora logo or brand name must be visible within the first 2 seconds.",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Is the Lumora logo or brand name visible within the first 2 seconds of the video?",
+    "ai_scope": "video"
+  },
+  {
+    "id": "logo_bug_position",
+    "title": "Logo bug in top-right",
+    "category": "logo",
+    "description": "A persistent logo bug sits in the top-right corner inside the 5% safe margin, never another corner.",
+    "source_quote": "A persistent logo bug sits in the top-right corner, inside the 5% safe margin",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Is the persistent logo bug located in the top-right corner of the frame, inside a 5% margin, and not in any other corner?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "logo_bug_size",
+    "title": "Logo bug size",
+    "category": "logo",
+    "description": "The logo bug must be 8-12% of the frame width.",
+    "source_quote": "The bug must be 8\u201312% of the frame width.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Is the logo bug roughly 8-12% of the frame width?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "logo_bug_end_card",
+    "title": "No bug on end card",
+    "category": "logo",
+    "description": "The logo bug is removed during the end card so the logo does not appear twice.",
+    "source_quote": "Remove the bug during the end card so the logo does not appear twice.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "During the end card, is the corner logo bug absent so the logo appears only once?",
+    "ai_scope": "video"
+  },
+  {
+    "id": "end_card",
+    "title": "End card present",
+    "category": "structure",
+    "description": "Every video ends with a 2-second end card: full logo centered on solid Lumora Violet or Midnight.",
+    "source_quote": "Every video ends with a 2-second end card: the full logo centered on a solid Lumora Violet or Midnight background.",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Does the video end with an approximately 2-second end card showing the full logo centered on a solid Lumora Violet (#5B2EFF) or Midnight (#14142B) background?",
+    "ai_scope": "video"
+  },
+  {
+    "id": "tagline",
+    "title": "End card tagline",
+    "category": "text",
+    "description": "The tagline 'Light up every moment.' appears under the logo in Inter Regular, Cloud White.",
+    "source_quote": "The tagline \"Light up every moment.\" appears beneath the logo in Inter Regular, Cloud White.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Does the end card show the tagline \"Light up every moment.\" beneath the logo in white Inter Regular?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "font",
+    "title": "Inter typeface only",
+    "category": "typography",
+    "description": "All on-screen text uses Inter; serif typefaces are never used.",
+    "source_quote": "On-screen text uses Inter only",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Is all on-screen text set in the Inter sans-serif typeface, with no serif or other typefaces?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "text_size",
+    "title": "Minimum text size",
+    "category": "text",
+    "description": "On-screen text height is at least 4% of the frame height.",
+    "source_quote": "Text height at least 4% of the frame height.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Is all on-screen text at least 4% of the frame height?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "text_lines",
+    "title": "Maximum two lines",
+    "category": "text",
+    "description": "On-screen text has no more than 2 lines.",
+    "source_quote": "No more than 2 lines, and no more than 8 words per line.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Does each piece of on-screen text have no more than 2 lines?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "text_words_per_line",
+    "title": "Maximum words per line",
+    "category": "text",
+    "description": "No more than 8 words per line of on-screen text.",
+    "source_quote": "No more than 2 lines, and no more than 8 words per line.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Does every line of on-screen text have no more than 8 words?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "safe_area",
+    "title": "Text in title-safe area",
+    "category": "text",
+    "description": "All on-screen text stays inside the 10% title-safe area.",
+    "source_quote": "Keep all text inside the 10% title-safe area.",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Is all on-screen text fully inside the central area of the frame, at least 10% away from every edge?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "text_color",
+    "title": "Approved text colors",
+    "category": "color",
+    "description": "Text is Cloud White on brand colors or footage, Midnight on white.",
+    "source_quote": "Cloud White on brand colors or footage; Midnight on white.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Is on-screen text Cloud White on dark or brand-colored backgrounds and Midnight on white backgrounds?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "captions",
+    "title": "Burned-in captions",
+    "category": "captions",
+    "description": "Web and social videos carry burned-in captions in the lower third, Cloud White Inter Regular on a semi-transparent Midnight box.",
+    "source_quote": "All web and social videos must carry burned-in captions for every spoken line and key message",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Does the video show burned-in captions in the lower third, centered, in white text on a semi-transparent dark box?",
+    "ai_scope": "video"
+  },
+  {
+    "id": "banned_color",
+    "title": "No green",
+    "category": "color",
+    "description": "No green backgrounds or graphics at any point.",
+    "source_quote": "No green backgrounds or graphics at any point.",
+    "severity": "critical",
+    "check_type": "ai",
+    "criterion": "Is the video free of green backgrounds, shapes or graphics throughout?",
+    "ai_scope": "video"
+  },
+  {
+    "id": "palette",
+    "title": "Brand palette only",
+    "category": "color",
+    "description": "Backgrounds, shapes, lower thirds and transitions use only the brand palette.",
+    "source_quote": "Backgrounds, shapes, lower thirds and transitions use only the brand palette",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Do all backgrounds, shapes and graphics use only Lumora Violet, Sunrise Coral, Midnight and Cloud White?",
+    "ai_scope": "video"
+  },
+  {
+    "id": "contrast",
+    "title": "Text contrast",
+    "category": "accessibility",
+    "description": "Text keeps at least 4.5:1 contrast with its background.",
+    "source_quote": "Maintain at least 4.5:1 contrast between text and background.",
+    "severity": "major",
+    "check_type": "ai",
+    "criterion": "Is all on-screen text clearly legible, with strong contrast (at least 4.5:1) against its background?",
+    "ai_scope": "frames"
+  },
+  {
+    "id": "music_tone",
+    "title": "Warm upbeat music, no lyrics under voiceover",
+    "category": "audio",
+    "description": "Music is warm and upbeat with no lyrics under voiceover.",
+    "source_quote": "Music should be warm and upbeat. No lyrics underneath voiceover.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Is the music warm and upbeat, with no lyrics under any voiceover?",
+    "ai_scope": "audio"
+  },
+  {
+    "id": "tone_of_voice",
+    "title": "Plain, warm language",
+    "category": "voice",
+    "description": "Copy avoids hype words such as 'revolutionary', 'insane' or 'game-changing'.",
+    "source_quote": "Avoid hype words such as \"revolutionary\", \"insane\" or \"game-changing\".",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Is the on-screen and spoken copy free of hype words such as 'revolutionary', 'insane' or 'game-changing'?",
+    "ai_scope": "video"
+  },
+  {
+    "id": "brand_name_spelling",
+    "title": "Brand name spelling",
+    "category": "voice",
+    "description": "The brand name is written as Lumora in running text, never LUMORA or lumora.",
+    "source_quote": "Always write the brand name as Lumora (capital L), never LUMORA or lumora in running text.",
+    "severity": "minor",
+    "check_type": "ai",
+    "criterion": "Where the brand name appears in running text, is it written as 'Lumora'?",
+    "ai_scope": "frames"
+  }
+]
