@@ -26,7 +26,7 @@ def test_prompt_lists_technical_checks_and_guideline():
 def test_extract_with_mock_llm_round_trips(tmp_path):
     llm = MockLLM(fixture=FIXTURE)
     brand = extract_rules(PDF, "Lumora", llm)
-    assert len(brand.rules) == 26
+    assert len(brand.rules) == 27
     assert len(llm.calls) == 1 and "6.4 Logo bug" in llm.calls[0][1]
 
     save_brand(brand, tmp_path)
@@ -66,3 +66,10 @@ def test_wrapped_response_is_unwrapped():
 def test_empty_response_raises():
     with pytest.raises(ValueError):
         extract_rules(PDF, "B", MockLLM(response=[]))
+
+
+def test_case_only_banned_words_become_an_ai_rule():
+    raw = [{"id": "casing", "title": "t", "category": "voice", "description": "Write Lumora, never LUMORA",
+            "check_type": "technical", "check_key": "banned_words", "params": {"words": ["LUMORA", "lumora"]}}]
+    (rule,) = normalize_rules(raw)
+    assert rule.check_type == CheckType.ai and rule.criterion == "Write Lumora, never LUMORA"

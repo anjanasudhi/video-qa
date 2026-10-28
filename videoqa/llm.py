@@ -2,14 +2,28 @@
 
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any, Protocol
 
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
 
 
 class LLM(Protocol):
     def generate_json(self, system: str, prompt: str) -> Any: ...
+
+
+def call_with_retries(fn, attempts: int = 4):
+    """Gemini's free tier returns transient 5xx under load and occasionally malformed JSON; retry both."""
+    from google.genai import errors
+
+    for attempt in range(attempts):
+        try:
+            return fn()
+        except (errors.ServerError, json.JSONDecodeError):
+            if attempt == attempts - 1:
+                raise
+            time.sleep(2 ** (attempt + 1))
 
 
 class GeminiLLM:
@@ -30,16 +44,20 @@ class GeminiLLM:
     def generate_json(self, system: str, prompt: str) -> Any:
         from google.genai import types
 
-        response = self.client.models.generate_content(
-            model=self.model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system,
-                response_mime_type="application/json",
-                temperature=0.1,
-            ),
-        )
-        return json.loads(response.text)
+        def call():
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system,
+                    response_mime_type="application/json",
+                    temperature=0.1,
+                    thinking_config=types.ThinkingConfig(thinking_level="low"),
+                ),
+            )
+            return json.loads(response.text)
+
+        return call_with_retries(call)
 
 
 class MockLLM:

@@ -113,10 +113,14 @@ def render_frame(spec: Spec, t: float) -> Image.Image:
         mark = logo(int(w * 0.4), on_dark=True)
         img.paste(mark, ((w - mark.width) // 2, int(h * 0.42) - mark.height // 2), mark)
         if spec.endcard.get("tagline", True):
-            ImageDraw.Draw(img).text(
-                (w // 2, int(h * 0.42) + mark.height), TAGLINE,
-                font=font(FONT_REGULAR, int(0.045 * h)), fill=hex_to_rgb(WHITE), anchor="mm",
-            )
+            # Portrait frames are too narrow for the tagline on one line at the minimum text size.
+            lines = ["Light up", "every moment."] if h > w else [TAGLINE]
+            size = int(0.045 * h) if h <= w else int(0.04 * h)
+            for n, line in enumerate(lines):
+                ImageDraw.Draw(img).text(
+                    (w // 2, int(h * 0.42) + mark.height + int(n * size * 1.25)), line,
+                    font=font(FONT_REGULAR, size), fill=hex_to_rgb(WHITE), anchor="mm",
+                )
 
     bug = spec.bug
     if bug and bug["start"] <= t < bug["end"] and (bug.get("persist_on_end") or not in_end):
@@ -259,7 +263,7 @@ def specs() -> list[Spec]:
         bug={"corner": "bottom-left", "width_frac": 0.15, "start": 0.5, "end": 15.0, "persist_on_end": True},
         endcard={"start": 13.0, "bg": VIOLET, "tagline": True},
         violations=["logo_bug_position", "logo_bug_size", "logo_bug_end_card", "banned_color",
-                    "font", "text_lines", "text_words_per_line", "safe_area", "captions", "tone_of_voice"],
+                    "font", "text_lines", "safe_area", "captions", "tone_of_voice", "palette", "contrast"],
         description="Right format and audio, but wrong logo bug corner/size, serif font, green scene, text overflow, no captions.",
     )
 
@@ -277,7 +281,7 @@ def specs() -> list[Spec]:
         flash=(8.0, 10.0, 8),
         gain_db=14.0,
         violations=["resolution", "frame_rate", "duration", "brand_reveal", "end_card", "captions",
-                    "loudness", "clipping", "flashing", "contrast"],
+                    "loudness", "clipping", "flashing", "contrast", "text_color", "palette", "tagline"],
         description="720p/24fps, 22s, late logo reveal, no end card, no captions, clipped loud audio, strobing, low-contrast text.",
     )
 
@@ -285,8 +289,17 @@ def specs() -> list[Spec]:
 
 
 def main():
-    manifest = {}
+    import sys
+
+    only = set(sys.argv[1:])
+    manifest_path = OUT_DIR / "manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     for spec in specs():
+        if only and spec.name not in only:
+            # keep ground truth in sync even when the video itself is not re-rendered
+            if f"{spec.name}.mp4" in manifest:
+                manifest[f"{spec.name}.mp4"].update(compliant=not spec.violations, expected_violations=spec.violations, description=spec.description)
+            continue
         path = render_video(spec)
         manifest[path.name] = {
             "brand": "Lumora",
@@ -295,7 +308,7 @@ def main():
             "description": spec.description,
             "loudness": measure_loudness(path),
         }
-    (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps(manifest, indent=2))
 
 

@@ -2,11 +2,13 @@
 
 import json
 import os
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Protocol
 
-from .llm import DEFAULT_GEMINI_MODEL
+from .formats import gemini_ready
+from .llm import DEFAULT_GEMINI_MODEL, call_with_retries
 from .models import Rule
 from .probe import VideoInfo
 
@@ -49,23 +51,31 @@ class GeminiVideoReviewer:
         self.model = model or os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
 
     def review(self, video: Path, info: VideoInfo, rules: list[Rule]) -> list[dict[str, Any]]:
+        with tempfile.TemporaryDirectory() as tmp:
+            return self._review(gemini_ready(Path(video), Path(tmp)), info, rules)
+
+    def _review(self, upload: Path, info: VideoInfo, rules: list[Rule]) -> list[dict[str, Any]]:
         from google.genai import types
 
-        uploaded = self.client.files.upload(file=str(video))
+        uploaded = self.client.files.upload(file=str(upload))
         try:
             while uploaded.state and uploaded.state.name == "PROCESSING":
                 time.sleep(2)
                 uploaded = self.client.files.get(name=uploaded.name)
             if uploaded.state and uploaded.state.name == "FAILED":
                 raise RuntimeError("Gemini could not process the video file")
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=[uploaded, build_review_prompt(info, rules)],
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT, response_mime_type="application/json", temperature=0.0,
-                ),
-            )
-            return json.loads(response.text)
+
+            def call():
+                response = self.client.models.generate_content(
+                    model=self.model,
+                    contents=[uploaded, build_review_prompt(info, rules)],
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT, response_mime_type="application/json", temperature=0.0,
+                    ),
+                )
+                return json.loads(response.text)
+
+            return call_with_retries(call)
         finally:
             try:
                 self.client.files.delete(name=uploaded.name)

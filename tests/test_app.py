@@ -16,7 +16,7 @@ def test_admin_offline_extract_then_evaluate_technical_only(tmp_path, monkeypatc
     at.checkbox[1].check().run()  # offline demo rules
     at.button[0].click().run()
     assert not at.exception, at.exception
-    assert any("Saved 26 rules" in s.value for s in at.success)
+    assert any("Saved 27 rules" in s.value for s in at.success)
     assert (tmp_path / "lumora.json").exists()
 
     # QA tab: pick a sample video and run technical checks only
@@ -24,4 +24,4 @@ def test_admin_offline_extract_then_evaluate_technical_only(tmp_path, monkeypatc
     next(b for b in at.button if b.label == "Evaluate").click().run()
     assert not at.exception, at.exception
     metrics = {m.label: m.value for m in at.metric}
-    assert metrics["Failed"] == "6"
+    assert metrics["Failed"] == "12"

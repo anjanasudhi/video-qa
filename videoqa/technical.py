@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .probe import VideoInfo, mean_luminance, measure_audio, probe
+from .visual import VisualAnalysis
+from .visual_checks import CHECKS as VISUAL_CHECKS
 
 CheckOutcome = tuple[bool, str, list[float]]
 
@@ -12,12 +14,21 @@ CheckOutcome = tuple[bool, str, list[float]]
 class VideoContext:
     path: Path
     info: VideoInfo
+    brand_name: str = ""
+    logo_paths: list[Path] = field(default_factory=list)
     _audio: dict | None = field(default=None, repr=False)
     _luma = None
+    _visual: VisualAnalysis | None = field(default=None, repr=False)
 
     @classmethod
-    def open(cls, path: str | Path) -> "VideoContext":
-        return cls(Path(path), probe(path))
+    def open(cls, path: str | Path, brand_name: str = "", logo_paths: list[Path] | None = None) -> "VideoContext":
+        return cls(Path(path), probe(path), brand_name, list(logo_paths or []))
+
+    @property
+    def visual(self) -> VisualAnalysis:
+        if self._visual is None:
+            self._visual = VisualAnalysis(self.path, self.info, self.logo_paths)
+        return self._visual
 
     @property
     def audio(self) -> dict:
@@ -99,4 +110,5 @@ CHECKS = {
     "loudness": loudness,
     "true_peak": true_peak,
     "flashing": flashing,
+    **VISUAL_CHECKS,
 }
