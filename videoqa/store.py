@@ -6,7 +6,8 @@ from pathlib import Path
 
 from .models import Brand
 
-DEFAULT_DIR = Path(os.environ.get("VIDEOQA_DATA_DIR", Path(__file__).resolve().parent.parent / "data" / "brands"))
+def data_dir() -> Path:
+    return Path(os.environ.get("VIDEOQA_DATA_DIR", Path(__file__).resolve().parent.parent / "data" / "brands"))
 
 
 def _path(name: str, directory: Path) -> Path:
@@ -16,18 +17,19 @@ def _path(name: str, directory: Path) -> Path:
     return directory / f"{slug}.json"
 
 
-def save_brand(brand: Brand, directory: Path = DEFAULT_DIR) -> Path:
-    path = _path(brand.name, directory)
+def save_brand(brand: Brand, directory: Path | None = None) -> Path:
+    path = _path(brand.name, directory or data_dir())
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(brand.model_dump_json(indent=2) + "\n")
     return path
 
 
-def load_brand(name: str, directory: Path = DEFAULT_DIR) -> Brand:
-    return Brand.model_validate_json(_path(name, directory).read_text())
+def load_brand(name: str, directory: Path | None = None) -> Brand:
+    return Brand.model_validate_json(_path(name, directory or data_dir()).read_text())
 
 
-def list_brands(directory: Path = DEFAULT_DIR) -> list[str]:
+def list_brands(directory: Path | None = None) -> list[str]:
+    directory = directory or data_dir()
     if not directory.exists():
         return []
     return sorted(Brand.model_validate_json(p.read_text()).name for p in directory.glob("*.json"))
