@@ -1,0 +1,4 @@
+pypdf
+pydantic
+google-genai
+pytest
