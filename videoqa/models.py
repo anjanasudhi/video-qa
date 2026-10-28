@@ -52,3 +52,31 @@ class Brand(BaseModel):
     name: str
     source_file: str = ""
     rules: list[Rule] = Field(default_factory=list)
+
+
+class Status(str, Enum):
+    passed = "pass"
+    failed = "fail"
+    error = "error"  # the check could not be run
+    skipped = "skipped"
+
+
+class CheckResult(BaseModel):
+    rule_id: str
+    title: str
+    severity: Severity
+    check_type: CheckType
+    status: Status
+    detail: str = ""
+    timestamps: list[float] = Field(default_factory=list, description="Seconds into the video where the issue shows")
+
+
+class Report(BaseModel):
+    brand: str
+    video: str
+    score: float = Field(description="0-100, severity-weighted share of evaluated rules that passed")
+    results: list[CheckResult]
+
+    @property
+    def failures(self) -> list[CheckResult]:
+        return [r for r in self.results if r.status == Status.failed]
