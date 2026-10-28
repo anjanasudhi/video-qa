@@ -10,6 +10,7 @@ import pandas as pd
 import streamlit as st
 
 from videoqa.evaluate import evaluate
+from videoqa.formats import SUPPORTED_EXTENSIONS
 from videoqa.extract import extract_rules
 from videoqa.llm import GeminiLLM, MockLLM
 from videoqa.models import Brand, CheckType, Rule, Severity, Status
@@ -190,7 +191,7 @@ def qa_tab():
         st.info("No brands yet. An admin needs to create one in the Admin tab first.")
         return
     brand_name = st.selectbox("Brand", brands, key="qa_brand")
-    upload = st.file_uploader("Video asset", type=["mp4", "mov", "m4v", "webm"])
+    upload = st.file_uploader("Video asset", type=SUPPORTED_EXTENSIONS)
     sample = st.selectbox("...or try a sample", ["(none)"] + [p.name for p in SAMPLE_VIDEOS])
     use_ai = st.checkbox("Run AI checks with Gemini", value=bool(api_key()),
                          help="Needs a Gemini API key. Technical checks always run.")

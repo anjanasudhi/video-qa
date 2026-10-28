@@ -34,7 +34,7 @@ python -m videoqa evaluate samples/videos/lumora_violations_brand_16x9_15s.mp4 -
 
 Brand rules are saved as JSON in `data/brands/` (override with `VIDEOQA_DATA_DIR`). Upload the brand's logo (transparent PNGs) in the Admin tab; without it the logo checks are skipped rather than guessed.
 
-**Speed and limits.** Evaluating a video takes roughly 1-2 seconds of processing per second of video for the measured checks (about 35 s for a 15 s 1080p clip on 4 cores), plus about 15-20 s for the Gemini review. At most 150 frames are sampled, so very long videos are analysed more coarsely. The uploader accepts MP4, MOV, M4V and WEBM up to Streamlit's 200 MB default. Logo detection assumes the logo sits on flat graphics, not busy footage.
+**Speed and limits.** Evaluating a video takes roughly 1-2 seconds of processing per second of video for the measured checks (about 35 s for a 15 s 1080p clip on 4 cores), plus about 15-20 s for the Gemini review. At most 150 frames are sampled, so very long videos are analysed more coarsely. The uploader accepts MP4, M4V, MOV, WEBM, MKV, AVI, WMV, FLV, MPG/MPEG, TS/MTS/M2TS, 3GP, OGV and MXF (anything ffmpeg can decode; the list is in `videoqa/formats.py`) up to Streamlit's 200 MB default. Containers Gemini does not take directly are converted to a 720p-class MP4 copy for the AI review only; the measured checks always read your original file. Logo detection assumes the logo sits on flat graphics, not busy footage.
 
 ## Sample data
 
