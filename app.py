@@ -14,13 +14,14 @@ from videoqa.formats import SUPPORTED_EXTENSIONS
 from videoqa.extract import extract_rules
 from videoqa.llm import GeminiLLM, MockLLM
 from videoqa.models import Brand, CheckType, Rule, Severity, Status
-from videoqa.store import list_brands, load_brand, logo_paths, save_brand, save_logo
+from videoqa.store import font_paths, list_brands, load_brand, logo_paths, save_brand, save_font, save_logo
 from videoqa.vision import GeminiVideoReviewer
 
 ROOT = Path(__file__).resolve().parent
 SAMPLE_PDF = ROOT / "samples" / "guidelines" / "lumora_brand_guidelines.pdf"
 SAMPLE_RULES = ROOT / "samples" / "rules" / "lumora_expected_rules.json"
 SAMPLE_LOGOS = sorted((ROOT / "samples" / "assets").glob("lumora_logo_*.png"))
+SAMPLE_FONTS = sorted((ROOT / "samples" / "assets" / "fonts").glob("*.otf"))
 SAMPLE_VIDEOS = sorted((ROOT / "samples" / "videos").glob("*.mp4"))
 
 STATUS_ICON = {Status.passed: "✅", Status.failed: "❌", Status.error: "⚠️", Status.skipped: "⏭️"}
@@ -102,6 +103,8 @@ def admin_tab():
                         if use_sample:
                             for logo in SAMPLE_LOGOS:
                                 save_logo(brand, logo.name, logo.read_bytes())
+                            for font_file in SAMPLE_FONTS:
+                                save_font(brand, font_file.name, font_file.read_bytes())
                         save_brand(brand)
                         st.session_state["flash"] = f"Saved {len(brand.rules)} rules for {brand.name}. Select it above to review."
                         st.rerun()
@@ -122,6 +125,20 @@ def admin_tab():
         if st.button("Save logos", disabled=not new_logos):
             for f in new_logos:
                 save_logo(brand, f.name, f.getvalue())
+            save_brand(brand)
+            st.rerun()
+    fonts = font_paths(brand)
+    with st.expander(f"Brand font files ({len(fonts)})", expanded=False):
+        if fonts:
+            st.write(", ".join(p.name for p in fonts))
+        else:
+            st.info("Optional. With no font file the typeface rule is judged by Gemini; with one it is measured "
+                    "by comparing the letters on screen with the font. Upload every weight the guideline allows "
+                    "(for example Regular and Bold).")
+        new_fonts = st.file_uploader("Font files (TTF or OTF)", type=["ttf", "otf"], accept_multiple_files=True, key=f"fonts_{brand.name}")
+        if st.button("Save fonts", disabled=not new_fonts):
+            for f in new_fonts:
+                save_font(brand, f.name, f.getvalue())
             save_brand(brand)
             st.rerun()
     st.caption(f"Source: {brand.source_file or 'n/a'} · {len(brand.rules)} rules. Edit cells, then save.")

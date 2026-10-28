@@ -15,6 +15,7 @@ import numpy as np
 
 from .visual import (
     CMYK_EXTRA_TOLERANCE,
+    MissingAsset,
     TextBox,
     contrast_ratio,
     relative_luminance,
@@ -297,6 +298,46 @@ def banned_words(p: dict, ctx) -> CheckOutcome:
     return True, "no banned words in the on-screen text (spoken words are not checked)", []
 
 
+# ---------- typeface ----------
+
+def font_match(p: dict, ctx) -> CheckOutcome:
+    """Compares the letters on screen with the brand font file (see fonts.py for how and for what it cannot do)."""
+    from .fonts import compare_line, hires_frame, load_references
+
+    if not ctx.font_paths:
+        raise MissingAsset("this check needs the brand's font file; upload it in the Admin tab")
+    try:
+        brand, control, names, owner, families = load_references(ctx.font_paths)
+    except ValueError as exc:
+        raise MissingAsset(str(exc))
+    va = ctx.visual
+    family = p.get("family") or " / ".join(families)
+    min_share = p.get("min_match_share", 0.55)
+    lines, seen = [], set()
+    for i, boxes in _text_boxes(ctx, min_conf=0.85).items():
+        for b in boxes:
+            key = _norm(b.text)
+            if key in seen or b.height < 0.03 or len(key.replace(" ", "")) < 6:
+                continue
+            seen.add(key)
+            frame = hires_frame(va.path, va.times[i], va.info.width, va.info.height)
+            h, w = frame.shape[:2]
+            crop = frame[int(b.y0 * h) : int(np.ceil(b.y1 * h)), int(b.x0 * w) : int(np.ceil(b.x1 * w))]
+            result = compare_line(crop, brand, control, names, owner)
+            if result:
+                lines.append((va.times[i], b.text, *result))
+            if len(lines) >= 24:
+                break
+    if not lines:
+        return True, "no on-screen text was large and clear enough to compare with the font file", []
+    bad = [(t, text, share, like) for t, text, _, share, like in lines if share < min_share]
+    if bad:
+        t, text, share, like = bad[0]
+        extra = f"; they look like {like}" if like else ""
+        return False, f'"{text}": only {share:.0%} of its letters match {family}{extra}', sorted({round(t, 1) for t, *_ in bad})
+    return True, f"letters in {len(lines)} text lines match {family} (checked against {len(names)} other installed fonts)", []
+
+
 # ---------- logo ----------
 
 def _end_window(p: dict, va) -> tuple[list[int], list[int]]:
@@ -409,4 +450,5 @@ CHECKS = {
     "logo_bug_width": logo_bug_width,
     "logo_bug_absent_on_end_card": logo_bug_absent_on_end_card,
     "end_card": end_card,
+    "font_match": font_match,
 }

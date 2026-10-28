@@ -114,7 +114,9 @@
     "check_key": "logo_first_seen",
     "params": {
       "seconds": 2
-    }
+    },
+    "criterion": "Is the Lumora logo or brand name visible within the first 2 seconds of the video?",
+    "ai_scope": "video"
   },
   {
     "id": "logo_bug_position",
@@ -129,7 +131,9 @@
       "corner": "top-right",
       "safe_margin": 0.05,
       "end_card_seconds": 2
-    }
+    },
+    "criterion": "Is the persistent logo bug located in the top-right corner of the frame, inside a 5% margin, and not in any other corner?",
+    "ai_scope": "frames"
   },
   {
     "id": "logo_bug_size",
@@ -144,7 +148,9 @@
       "min_fraction": 0.08,
       "max_fraction": 0.12,
       "end_card_seconds": 2
-    }
+    },
+    "criterion": "Is the logo bug roughly 8-12% of the frame width?",
+    "ai_scope": "frames"
   },
   {
     "id": "logo_bug_end_card",
@@ -157,7 +163,9 @@
     "check_key": "logo_bug_absent_on_end_card",
     "params": {
       "end_card_seconds": 2
-    }
+    },
+    "criterion": "During the end card, is the corner logo bug absent so the logo appears only once?",
+    "ai_scope": "video"
   },
   {
     "id": "end_card",
@@ -180,7 +188,9 @@
           "hex": "#14142B"
         }
       ]
-    }
+    },
+    "criterion": "Does the video end with an approximately 2-second end card showing the full logo centered on a solid Lumora Violet (#5B2EFF) or Midnight (#14142B) background?",
+    "ai_scope": "video"
   },
   {
     "id": "tagline",
@@ -203,9 +213,13 @@
     "description": "All on-screen text uses Inter; serif typefaces are never used.",
     "source_quote": "On-screen text uses Inter only",
     "severity": "major",
-    "check_type": "ai",
+    "check_type": "technical",
     "criterion": "Is all on-screen text set in the Inter sans-serif typeface, with no serif or other typefaces?",
-    "ai_scope": "frames"
+    "ai_scope": "frames",
+    "check_key": "font_match",
+    "params": {
+      "family": "Inter"
+    }
   },
   {
     "id": "text_size",

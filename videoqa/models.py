@@ -48,6 +48,8 @@ TECHNICAL_CHECKS: dict[str, dict[str, str]] = {
     "logo_bug_width": {"min_fraction": "smallest width as a fraction of frame width", "max_fraction": "largest width", "end_card_seconds": "e.g. 2"},
     "logo_bug_absent_on_end_card": {"end_card_seconds": "e.g. 2"},
     "end_card": {"seconds": "end card length", "background_colors": "list of allowed solid background colours"},
+    # Needs the brand's font file; also give a criterion so the AI can judge the typeface when no file is uploaded.
+    "font_match": {"family": "name of the brand typeface, e.g. Inter"},
 }
 
 
@@ -70,6 +72,7 @@ class Brand(BaseModel):
     name: str
     source_file: str = ""
     logo_files: list[str] = Field(default_factory=list, description="Logo images (transparent PNG) the logo checks match against")
+    font_files: list[str] = Field(default_factory=list, description="Brand font files (TTF/OTF), one per allowed weight, for the typeface check")
     rules: list[Rule] = Field(default_factory=list)
 
 
