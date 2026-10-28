@@ -1,9 +1,11 @@
 google-genai
 numpy
+opencv-python-headless
 pandas
 pillow
 pydantic
 pypdf
 pytest
+rapidocr-onnxruntime
 reportlab
 streamlit

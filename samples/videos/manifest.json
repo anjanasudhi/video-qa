@@ -29,10 +29,11 @@
       "banned_color",
       "font",
       "text_lines",
-      "text_words_per_line",
       "safe_area",
       "captions",
-      "tone_of_voice"
+      "tone_of_voice",
+      "palette",
+      "contrast"
     ],
     "description": "Right format and audio, but wrong logo bug corner/size, serif font, green scene, text overflow, no captions.",
     "loudness": {
@@ -53,7 +54,10 @@
       "loudness",
       "clipping",
       "flashing",
-      "contrast"
+      "contrast",
+      "text_color",
+      "palette",
+      "tagline"
     ],
     "description": "720p/24fps, 22s, late logo reveal, no end card, no captions, clipped loud audio, strobing, low-contrast text.",
     "loudness": {

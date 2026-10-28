@@ -17,6 +17,27 @@ def _path(name: str, directory: Path) -> Path:
     return directory / f"{slug}.json"
 
 
+def assets_dir(name: str, directory: Path | None = None) -> Path:
+    path = _path(name, directory or data_dir())
+    return path.parent / f"{path.stem}_assets"
+
+
+def save_logo(brand: Brand, filename: str, content: bytes, directory: Path | None = None) -> None:
+    """Stores a logo image next to the brand's rules and records it on the brand (call save_brand afterwards)."""
+    target = assets_dir(brand.name, directory)
+    target.mkdir(parents=True, exist_ok=True)
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", filename)
+    (target / safe).write_bytes(content)
+    if safe not in brand.logo_files:
+        brand.logo_files.append(safe)
+
+
+def logo_paths(brand: Brand, directory: Path | None = None) -> list[Path]:
+    """Absolute paths of the brand's logos; entries that are already absolute (the bundled samples) are kept."""
+    base = assets_dir(brand.name, directory)
+    return [Path(f) if Path(f).is_absolute() else base / f for f in brand.logo_files]
+
+
 def save_brand(brand: Brand, directory: Path | None = None) -> Path:
     path = _path(brand.name, directory or data_dir())
     path.parent.mkdir(parents=True, exist_ok=True)

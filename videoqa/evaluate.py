@@ -3,7 +3,9 @@
 from pathlib import Path
 
 from .models import Brand, CheckResult, CheckType, Report, Rule, Severity, Status
+from .store import logo_paths
 from .technical import CHECKS, VideoContext
+from .visual import MissingAsset
 from .vision import VideoReviewer
 
 WEIGHTS = {Severity.critical: 3, Severity.major: 2, Severity.minor: 1}
@@ -22,6 +24,8 @@ def run_technical(rule: Rule, ctx: VideoContext) -> CheckResult:
         return _result(rule, Status.error, f"unknown technical check '{rule.check_key}'")
     try:
         ok, detail, timestamps = check(rule.params, ctx)
+    except MissingAsset as exc:
+        return _result(rule, Status.skipped, str(exc))
     except Exception as exc:  # a malformed param set should not sink the whole report
         return _result(rule, Status.error, f"{type(exc).__name__}: {exc}")
     return _result(rule, Status.passed if ok else Status.failed, detail, timestamps)
@@ -56,7 +60,7 @@ def score(results: list[CheckResult]) -> float:
 
 def evaluate(video: str | Path, brand: Brand, reviewer: VideoReviewer | None = None) -> Report:
     """Technical rules always run. AI rules run only when a reviewer is given; otherwise they are skipped."""
-    ctx = VideoContext.open(video)
+    ctx = VideoContext.open(video, brand.name, logo_paths(brand))
     results: dict[str, CheckResult] = {}
     ai_rules: list[Rule] = []
     for rule in (r for r in brand.rules if r.enabled):

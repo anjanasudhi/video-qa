@@ -30,6 +30,24 @@ TECHNICAL_CHECKS: dict[str, dict[str, str]] = {
     "loudness": {"target_lufs": "integrated loudness target", "tolerance": "LU of slack"},
     "true_peak": {"max_dbtp": "maximum true peak in dBTP"},
     "flashing": {"max_per_second": "maximum luminance flashes per second"},
+    # Colours below are hex strings like "#5B2EFF", or objects {"name", "hex"} / {"name", "rgb": [r, g, b]} /
+    # {"name", "cmyk": [c, m, y, k]} with CMYK in percent. Copy them exactly as the guideline writes them.
+    "palette_adherence": {"palette": "list of approved colours", "tolerance": "ΔE, default 12", "max_off_palette_share": "0-1, default 0.08"},
+    "banned_hue": {"hue_ranges": "list of [min, max] hue degrees to forbid, e.g. [[80, 170]] for green", "max_share": "0-1, default 0.01"},
+    "color_coverage": {"color": "one colour", "max_share": "largest allowed share of the frame, 0-1"},
+    "text_height": {"min_fraction": "minimum text height as a fraction of frame height, e.g. 0.04"},
+    "text_lines": {"max_lines": "maximum lines in a block of on-screen text"},
+    "text_words_per_line": {"max_words": "maximum words per line of on-screen text"},
+    "text_safe_area": {"margin": "fraction of each edge that must stay clear of text, e.g. 0.1"},
+    "text_contrast": {"min_ratio": "minimum WCAG contrast ratio, e.g. 4.5"},
+    "text_color": {"on_dark": "required text colour on dark backgrounds", "on_light": "required text colour on light backgrounds"},
+    "text_present": {"text": "exact wording that must appear", "last_seconds": "window at the end of the video, e.g. 3"},
+    "banned_words": {"words": "words or phrases that must not appear in on-screen text"},
+    "logo_first_seen": {"seconds": "the logo must be visible by this time"},
+    "logo_bug_corner": {"corner": "top-left | top-right | bottom-left | bottom-right", "safe_margin": "fraction of edge, e.g. 0.05", "end_card_seconds": "length of the end card, e.g. 2"},
+    "logo_bug_width": {"min_fraction": "smallest width as a fraction of frame width", "max_fraction": "largest width", "end_card_seconds": "e.g. 2"},
+    "logo_bug_absent_on_end_card": {"end_card_seconds": "e.g. 2"},
+    "end_card": {"seconds": "end card length", "background_colors": "list of allowed solid background colours"},
 }
 
 
@@ -51,6 +69,7 @@ class Rule(BaseModel):
 class Brand(BaseModel):
     name: str
     source_file: str = ""
+    logo_files: list[str] = Field(default_factory=list, description="Logo images (transparent PNG) the logo checks match against")
     rules: list[Rule] = Field(default_factory=list)
 
 

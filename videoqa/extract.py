@@ -41,9 +41,14 @@ Return a JSON array. Each element has these fields:
 phrase it so that "yes" means the video COMPLIES
   ai_scope      for ai rules only: "frames" (a few sampled frames are enough), "audio", or "video" (needs timing or motion)
 
-Use check_type "technical" ONLY when the rule is one of these measurable checks:
+Use check_type "technical" whenever the rule can be measured with one of these deterministic checks (prefer them \
+over "ai": they are exact and repeatable):
 {checks}
-Everything else is check_type "ai". Split compound sentences into separate rules so each rule tests one thing. \
+Colours must be copied exactly as the guideline writes them: a hex string, or an object with "name" and one of \
+"hex", "rgb" ([r, g, b]) or "cmyk" ([c, m, y, k] in percent). If the guideline gives several forms for a colour, \
+give the hex or rgb one. Rules about spoken words, tone, music, the typeface, caption quality or overall look \
+are check_type "ai", and so is any rule about how a word is capitalised or spelled. Everything else that cannot be \
+measured is also check_type "ai". Split compound sentences into separate rules so each rule tests one thing. \
 Do not invent rules that are not in the guideline.
 
 GUIDELINE:
@@ -70,6 +75,11 @@ def normalize_rules(raw: list[dict]) -> list[Rule]:
             rule.check_key = None
             rule.criterion = rule.criterion or rule.description
             rule.ai_scope = AiScope.video
+        if rule.check_type == CheckType.technical and rule.check_key == "banned_words":
+            words = [str(w) for w in rule.params.get("words", [])]
+            if len({w.lower() for w in words}) < len(words):
+                # Word matching ignores case, so a "write it as Lumora, not LUMORA" rule would flag correct text.
+                rule.check_type, rule.check_key, rule.params, rule.ai_scope = CheckType.ai, None, {}, AiScope.frames
         if rule.check_type == CheckType.ai and not rule.criterion:
             rule.criterion = rule.description
         rule.id = _slug(rule.id)

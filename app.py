@@ -13,12 +13,13 @@ from videoqa.evaluate import evaluate
 from videoqa.extract import extract_rules
 from videoqa.llm import GeminiLLM, MockLLM
 from videoqa.models import Brand, CheckType, Rule, Severity, Status
-from videoqa.store import list_brands, load_brand, save_brand
+from videoqa.store import list_brands, load_brand, logo_paths, save_brand, save_logo
 from videoqa.vision import GeminiVideoReviewer
 
 ROOT = Path(__file__).resolve().parent
 SAMPLE_PDF = ROOT / "samples" / "guidelines" / "lumora_brand_guidelines.pdf"
 SAMPLE_RULES = ROOT / "samples" / "rules" / "lumora_expected_rules.json"
+SAMPLE_LOGOS = sorted((ROOT / "samples" / "assets").glob("lumora_logo_*.png"))
 SAMPLE_VIDEOS = sorted((ROOT / "samples" / "videos").glob("*.mp4"))
 
 STATUS_ICON = {Status.passed: "✅", Status.failed: "❌", Status.error: "⚠️", Status.skipped: "⏭️"}
@@ -97,6 +98,9 @@ def admin_tab():
                         llm = MockLLM(fixture=SAMPLE_RULES) if offline else GeminiLLM(api_key=api_key())
                         with st.spinner("Reading the guideline and extracting video rules..."):
                             brand = extract_rules(pdf, name, llm)
+                        if use_sample:
+                            for logo in SAMPLE_LOGOS:
+                                save_logo(brand, logo.name, logo.read_bytes())
                         save_brand(brand)
                         st.session_state["flash"] = f"Saved {len(brand.rules)} rules for {brand.name}. Select it above to review."
                         st.rerun()
@@ -106,6 +110,19 @@ def admin_tab():
     if not selected:
         return
     brand = load_brand(selected)
+    logos = logo_paths(brand)
+    with st.expander(f"Brand logo files ({len(logos)})", expanded=not logos):
+        if not logos:
+            st.warning("No logo uploaded: the logo checks (reveal time, bug corner and size, end card) will be skipped.")
+        else:
+            st.image([str(p) for p in logos], width=140, caption=[p.name for p in logos])
+        st.caption("Upload the logo as transparent PNGs. Add one per version if the logo changes colour on light and dark backgrounds.")
+        new_logos = st.file_uploader("Logo images", type="png", accept_multiple_files=True, key=f"logos_{brand.name}")
+        if st.button("Save logos", disabled=not new_logos):
+            for f in new_logos:
+                save_logo(brand, f.name, f.getvalue())
+            save_brand(brand)
+            st.rerun()
     st.caption(f"Source: {brand.source_file or 'n/a'} · {len(brand.rules)} rules. Edit cells, then save.")
     edited = st.data_editor(
         rules_to_frame(brand.rules), hide_index=True, width="stretch", key=f"rules_{brand.name}",
