@@ -1,0 +1,64 @@
+{
+  "lumora_compliant_16x9_15s.mp4": {
+    "brand": "Lumora",
+    "compliant": true,
+    "expected_violations": [],
+    "description": "Fully compliant 16:9 ad.",
+    "loudness": {
+      "integrated_lufs": -16.0,
+      "true_peak_dbtp": -4.2
+    }
+  },
+  "lumora_compliant_9x16_6s.mp4": {
+    "brand": "Lumora",
+    "compliant": true,
+    "expected_violations": [],
+    "description": "Fully compliant 9:16 six-second cutdown.",
+    "loudness": {
+      "integrated_lufs": -16.0,
+      "true_peak_dbtp": -3.2
+    }
+  },
+  "lumora_violations_brand_16x9_15s.mp4": {
+    "brand": "Lumora",
+    "compliant": false,
+    "expected_violations": [
+      "logo_bug_position",
+      "logo_bug_size",
+      "logo_bug_end_card",
+      "banned_color",
+      "font",
+      "text_lines",
+      "text_words_per_line",
+      "safe_area",
+      "captions",
+      "tone_of_voice"
+    ],
+    "description": "Right format and audio, but wrong logo bug corner/size, serif font, green scene, text overflow, no captions.",
+    "loudness": {
+      "integrated_lufs": -16.0,
+      "true_peak_dbtp": -4.2
+    }
+  },
+  "lumora_violations_tech_16x9_22s.mp4": {
+    "brand": "Lumora",
+    "compliant": false,
+    "expected_violations": [
+      "resolution",
+      "frame_rate",
+      "duration",
+      "brand_reveal",
+      "end_card",
+      "captions",
+      "loudness",
+      "clipping",
+      "flashing",
+      "contrast"
+    ],
+    "description": "720p/24fps, 22s, late logo reveal, no end card, no captions, clipped loud audio, strobing, low-contrast text.",
+    "loudness": {
+      "integrated_lufs": -3.7,
+      "true_peak_dbtp": 6.4
+    }
+  }
+}
