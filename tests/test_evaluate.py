@@ -15,6 +15,7 @@ BRAND = Brand(
     name="Lumora",
     rules=[Rule.model_validate(r) for r in json.loads((ROOT / "samples/rules/lumora_expected_rules.json").read_text())],
     logo_files=[str(p) for p in sorted((ROOT / "samples/assets").glob("lumora_logo_*.png"))],
+    font_files=[str(p) for p in sorted((ROOT / "samples/assets/fonts").glob("*.otf"))],
 )
 TECHNICAL_IDS = {r.id for r in BRAND.rules if r.check_type == CheckType.technical}
 
@@ -57,7 +58,7 @@ def test_ai_rules_are_skipped_without_reviewer():
 def test_ai_verdicts_feed_the_report():
     verdicts = {r.id: {"complies": True, "confidence": 0.9, "explanation": "ok"} for r in BRAND.rules if r.check_type == CheckType.ai}
     verdicts["captions"] = {"complies": False, "confidence": 0.8, "explanation": "No captions seen", "timestamps": [1.0, 5.5]}
-    del verdicts["font"]  # reviewer forgot one
+    del verdicts["music_tone"]  # reviewer forgot one
     reviewer = MockReviewer(verdicts)
     report = evaluate(VIDEOS / "lumora_compliant_16x9_15s.mp4", BRAND, reviewer)
 
@@ -65,7 +66,7 @@ def test_ai_verdicts_feed_the_report():
     by_id = {r.rule_id: r for r in report.results}
     assert by_id["captions"].status == Status.failed and by_id["captions"].timestamps == [1.0, 5.5]
     assert "80%" in by_id["captions"].detail
-    assert by_id["font"].status == Status.error
+    assert by_id["music_tone"].status == Status.error
     assert by_id["logo_bug_position"].status == Status.passed
     assert 0 < report.score < 100
 
@@ -96,3 +97,15 @@ def test_prompt_numbers_every_rule():
     ai_rules = [r for r in BRAND.rules if r.check_type == CheckType.ai]
     prompt = build_review_prompt(info, ai_rules)
     assert "1920x1080" in prompt and f"{len(ai_rules)}. [" in prompt and "[captions]" in prompt
+
+
+def test_missing_font_file_falls_back_to_the_ai_criterion():
+    no_font = BRAND.model_copy(update={"font_files": []})
+    reviewer = MockReviewer({"font": {"complies": False, "confidence": 0.9, "explanation": "Serif headline", "timestamps": [1.0]}})
+    report = evaluate(VIDEOS / "lumora_compliant_9x16_6s.mp4", no_font, reviewer)
+    font = next(r for r in report.results if r.rule_id == "font")
+    assert font.status == Status.failed and font.detail.startswith("AI judgement, since the brand file")
+    assert "font" in reviewer.calls[0]
+    # without a reviewer the rule is skipped, never guessed
+    report = evaluate(VIDEOS / "lumora_compliant_9x16_6s.mp4", no_font)
+    assert next(r for r in report.results if r.rule_id == "font").status == Status.skipped

@@ -32,6 +32,21 @@ def save_logo(brand: Brand, filename: str, content: bytes, directory: Path | Non
         brand.logo_files.append(safe)
 
 
+def save_font(brand: Brand, filename: str, content: bytes, directory: Path | None = None) -> None:
+    """Stores a brand font file next to the brand's rules (call save_brand afterwards)."""
+    target = assets_dir(brand.name, directory)
+    target.mkdir(parents=True, exist_ok=True)
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", filename)
+    (target / safe).write_bytes(content)
+    if safe not in brand.font_files:
+        brand.font_files.append(safe)
+
+
+def font_paths(brand: Brand, directory: Path | None = None) -> list[Path]:
+    base = assets_dir(brand.name, directory)
+    return [Path(f) if Path(f).is_absolute() else base / f for f in brand.font_files]
+
+
 def logo_paths(brand: Brand, directory: Path | None = None) -> list[Path]:
     """Absolute paths of the brand's logos; entries that are already absolute (the bundled samples) are kept."""
     base = assets_dir(brand.name, directory)

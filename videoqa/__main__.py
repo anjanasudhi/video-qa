@@ -9,7 +9,7 @@ from pathlib import Path
 from .evaluate import evaluate
 from .extract import extract_rules
 from .llm import get_llm
-from .store import load_brand, save_brand, save_logo
+from .store import load_brand, save_brand, save_font, save_logo
 from .vision import GeminiVideoReviewer
 
 
@@ -18,6 +18,8 @@ def cmd_extract(args):
     brand = extract_rules(args.pdf, args.brand, get_llm(args.backend, **kwargs))
     for logo in args.logo or []:
         save_logo(brand, Path(logo).name, Path(logo).read_bytes())
+    for font_file in args.font or []:
+        save_font(brand, Path(font_file).name, Path(font_file).read_bytes())
     path = save_brand(brand)
     print(f"Saved {len(brand.rules)} rules for {brand.name} to {path}")
     for rule in brand.rules:
@@ -44,6 +46,7 @@ def main():
     ex.add_argument("--backend", default="gemini", choices=["gemini", "mock"])
     ex.add_argument("--fixture", help="JSON file returned by the mock backend")
     ex.add_argument("--logo", action="append", help="Transparent PNG of the logo; repeat for several versions")
+    ex.add_argument("--font", action="append", help="Brand font file (TTF/OTF); repeat for each weight")
     ex.set_defaults(func=cmd_extract)
 
     ev = sub.add_parser("evaluate", help="Check a video against a brand's rules")

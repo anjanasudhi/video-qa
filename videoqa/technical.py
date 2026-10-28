@@ -16,13 +16,16 @@ class VideoContext:
     info: VideoInfo
     brand_name: str = ""
     logo_paths: list[Path] = field(default_factory=list)
+    font_paths: list[Path] = field(default_factory=list)
     _audio: dict | None = field(default=None, repr=False)
     _luma = None
     _visual: VisualAnalysis | None = field(default=None, repr=False)
 
     @classmethod
-    def open(cls, path: str | Path, brand_name: str = "", logo_paths: list[Path] | None = None) -> "VideoContext":
-        return cls(Path(path), probe(path), brand_name, list(logo_paths or []))
+    def open(
+        cls, path: str | Path, brand_name: str = "", logo_paths: list[Path] | None = None, font_paths: list[Path] | None = None
+    ) -> "VideoContext":
+        return cls(Path(path), probe(path), brand_name, list(logo_paths or []), list(font_paths or []))
 
     @property
     def visual(self) -> VisualAnalysis:

@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from .models import Brand, CheckResult, CheckType, Report, Rule, Severity, Status
-from .store import logo_paths
+from .store import font_paths, logo_paths
 from .technical import CHECKS, VideoContext
 from .visual import MissingAsset
 from .vision import VideoReviewer
@@ -60,18 +60,23 @@ def score(results: list[CheckResult]) -> float:
 
 def evaluate(video: str | Path, brand: Brand, reviewer: VideoReviewer | None = None) -> Report:
     """Technical rules always run. AI rules run only when a reviewer is given; otherwise they are skipped."""
-    ctx = VideoContext.open(video, brand.name, logo_paths(brand))
+    ctx = VideoContext.open(video, brand.name, logo_paths(brand), font_paths(brand))
     results: dict[str, CheckResult] = {}
     ai_rules: list[Rule] = []
     for rule in (r for r in brand.rules if r.enabled):
         if rule.check_type == CheckType.technical:
             results[rule.id] = run_technical(rule, ctx)
+            if results[rule.id].status == Status.skipped and rule.criterion and reviewer is not None:
+                del results[rule.id]  # a brand file is missing: let the AI judge it from the criterion instead
+                ai_rules.append(rule)
         elif reviewer is None:
             results[rule.id] = _result(rule, Status.skipped, "no AI reviewer configured")
         else:
             ai_rules.append(rule)
     if ai_rules:
         for res in run_ai(ai_rules, ctx, reviewer):
+            if res.check_type == CheckType.technical:
+                res.detail = f"AI judgement, since the brand file for the measured check is missing. {res.detail}".strip()
             results[res.rule_id] = res
     ordered = [results[r.id] for r in brand.rules if r.id in results]
     return Report(brand=brand.name, video=Path(video).name, score=score(ordered), results=ordered)

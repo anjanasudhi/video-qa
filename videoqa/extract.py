@@ -47,7 +47,10 @@ over "ai": they are exact and repeatable):
 Colours must be copied exactly as the guideline writes them: a hex string, or an object with "name" and one of \
 "hex", "rgb" ([r, g, b]) or "cmyk" ([c, m, y, k] in percent). If the guideline gives several forms for a colour, \
 give the hex or rgb one. Rules about spoken words, tone, music, the typeface, caption quality or overall look \
-are check_type "ai", and so is any rule about how a word is capitalised or spelled. Everything else that cannot be \
+are check_type "ai", and so is any rule about how a word is capitalised or spelled. The exception is the typeface: \
+a rule that fixes the brand typeface is check_type "technical" with check_key "font_match". Rules about the logo \
+(logo_*, end_card) and font_match depend on files the brand may not have uploaded, so for those ALSO fill in \
+criterion with the yes/no question an AI reviewer would answer instead. Everything else that cannot be \
 measured is also check_type "ai". Split compound sentences into separate rules so each rule tests one thing. \
 Do not invent rules that are not in the guideline.
 
